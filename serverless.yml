@@ -62,6 +62,23 @@ functions:
           rate: rate(1 minute)
           enabled: true
 
+plugins:
+  - serverless-plugin-aws-alerts
+
+custom:
+  alerts:
+    stages:
+      - dev
+    topics:
+      alarm: 
+        topic: ${self:service}-dev-alerts-alarm
+        notifications:
+          - protocol: email
+            endpoint: ${opt:email} # Change this to your email address
+    alarms:
+      - functionErrors
+      - functionThrottles
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
