@@ -20,10 +20,27 @@ service: ogi-monitoring
 provider:
   name: aws
   runtime: nodejs8.10
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - "sns:Publish"
+      Resource:
+        - ${self:custom.OrangejellyfishMonitoring}
 
 # you can overwrite defaults here
 #  stage: dev
   region: eu-west-2
+
+custom:
+  OrangejellyfishMonitoring:
+    Fn::Join:
+      - ":"
+      - - arn
+        - aws
+        - sns
+        - Ref: AWS::Region
+        - Ref: AWS::AccountId
+        - OrangejellyfishMonitoring
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -55,29 +72,29 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  func:
-    handler: handler.handler
+  pinger-func:  
+    handler: handler.producer
     events:
       - schedule:
           rate: rate(1 minute)
           enabled: true
 
-plugins:
-  - serverless-plugin-aws-alerts
+# plugins:
+#   - serverless-plugin-aws-alerts
 
-custom:
-  alerts:
-    stages:
-      - dev
-    topics:
-      alarm: 
-        topic: ${self:service}-dev-alerts-alarm
-        notifications:
-          - protocol: email
-            endpoint: ${opt:email} # Change this to your email address
-    alarms:
-      - functionErrors
-      - functionThrottles
+# custom:
+#   alerts:
+#     stages:
+#       - dev
+#     topics:
+#       alarm: 
+#         topic: ${self:service}-dev-alerts-alarm
+#         notifications:
+#           - protocol: email
+#             endpoint: ${opt:email} # Change this to your email address
+#     alarms:
+#       - functionErrors
+#       - functionThrottles
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

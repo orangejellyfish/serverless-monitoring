@@ -1,31 +1,33 @@
-// Dont want to deal with external modules for now.
-// Will iterate on this.
-const https = require('https');
+const request = require('request-promise-native');
+const AWS = require('aws-sdk');  
+const sns = new AWS.SNS();
 
 const URL = 'https://www.orangejellyfish.com/';
+const SNSTopicName = 'OrangejellyfishMonitoring';
 
-module.exports.handler = async (event) => {
-    
-    return new Promise((resolve, reject) =>  {
-        https.get(URL, (resp) => {
-          let data = '';
-         
-          resp.on('data', (chunk) => {
-            data += chunk;
-          });
-         
-          // The whole response has been received. Print out the result.
-          resp.on('end', () => {
-            if (resp.statusCode !== 200) {
-                reject('Some error');
-            }
-            
-            resolve(URL + ' IS available.');
-          });
-         
-        }).on("error", (err) => {
-          reject(URL + ' NOT available.');
-        });
-    });
-    
-};
+let getSNSContext = lambdaContext => ({
+  region: lambdaContext.invokedFunctionArn.split(':')[3],
+  accountId: lambdaContext.invokedFunctionArn.split(':')[4]
+});
+
+let publisher = (snsContext) => (message) => 
+  sns.publish({
+      Message: message,
+      TopicArn: `arn:aws:sns:${snsContext.region}:${snsContext.accountId}:${SNSTopicName}`
+  }, function(err, data) {
+      if (err) {
+          console.log(err.stack);
+          return;
+      }
+  });
+
+module.exports.producer = async (event, context) => {
+    let publishMessage = publisher(getSNSContext(context));
+    return request(URL)
+        .then(
+          () => {},
+          () => {
+            publishMessage(`${URL} NOT available!`)
+          }
+        );
+}
