@@ -16,7 +16,7 @@ provider:
 
 functions:
   pinger-func:  
-    handler: handler.producer
+    handler: handler.ping
     events:
       - schedule:
           rate: rate(1 minute)

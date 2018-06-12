@@ -10,24 +10,34 @@ let getSNSContext = lambdaContext => ({
   accountId: lambdaContext.invokedFunctionArn.split(':')[4]
 });
 
-let publisher = (snsContext) => (message) => 
+let publisher = (snsContext) => (message, success) => 
   sns.publish({
       Message: message,
+      MessageAttributes: {
+        success: {
+          DataType: 'String',
+          StringValue: success
+        }
+      },
       TopicArn: `arn:aws:sns:${snsContext.region}:${snsContext.accountId}:${SNSTopicName}`
-  }, function(err, data) {
+  }, (err) => {
       if (err) {
           console.log(err.stack);
           return;
       }
   });
 
-module.exports.producer = async (event, context) => {
+module.exports.ping = async (event, context) => {
     let publishMessage = publisher(getSNSContext(context));
     return request(URL)
         .then(
-          () => {},
           () => {
-            publishMessage(`${URL} NOT available!`)
+            publishMessage(`${URL} IS available!`, 'true')
+            return true;
+          },
+          () => {
+            publishMessage(`${URL} NOT available!`, 'false')
+            return false;
           }
         );
 }
