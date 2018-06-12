@@ -2,8 +2,8 @@ const request = require('request-promise-native');
 const AWS = require('aws-sdk');  
 const sns = new AWS.SNS();
 
-const URL = 'https://www.orangejellyfish.com/';
-const SNSTopicName = 'OrangejellyfishMonitoring';
+const URL = process.env.url;
+const SNSTopicName = process.env.snsTopic;
 
 let getSNSContext = lambdaContext => ({
   region: lambdaContext.invokedFunctionArn.split(':')[3],

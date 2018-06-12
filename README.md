@@ -7,7 +7,7 @@ Run **npm install -g serverless** .
 ## Deploying
 
 Run **serverless deploy --email [e-mail address
-]**.
+] --url [URL to monitor]** .
 
 Note: 
  - Make sure you set your AWS Credentials.
