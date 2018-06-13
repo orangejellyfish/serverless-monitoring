@@ -15,7 +15,7 @@ let publisher = (snsContext) => (message, success) =>
       Message: message,
       MessageAttributes: {
         success: {
-          DataType: 'String',
+          DataType: 'String', 
           StringValue: success
         }
       },
@@ -23,11 +23,11 @@ let publisher = (snsContext) => (message, success) =>
   }, (err) => {
       if (err) {
           console.log(err.stack);
-          return;
+          return; 
       }
   });
 
-module.exports.ping = async (event, context) => {
+module.exports.handler = async (event, context) => {
     let publishMessage = publisher(getSNSContext(context));
     return request(URL)
         .then(
@@ -37,7 +37,7 @@ module.exports.ping = async (event, context) => {
           },
           () => {
             publishMessage(`${URL} NOT available!`, 'false')
-            return false;
-          }
+            return false;   
+          } 
         );
 }
