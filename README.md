@@ -1,18 +1,27 @@
 # serverless-monitoring
 
+Service for monitoring URLs using serverless architecture.
+
+After deploying, this service starts monitoring the provided URL and sends an e-mail if the URL cannot be reached. The monitoring is done using polling, with 1 minute frequency.
+
 ## Installation
 
-Run **npm install -g serverless** .
+ - **npm install -g serverless**
 
-## Deploying
+## Deployment
 
-Run **serverless deploy --fromEmail [e-mail address
-] --toEmail [e-mail address] --url [URL to monitor]** .
+ - **serverless deploy --fromEmail <sender's e-mail address> --toEmail <recipient's e-mail address> --url <URL to monitor>** --stage <dev|prod>
+
+## Clean slate
+
+ - **serverless remove --fromEmail < sender's e-mail address > --toEmail < recipient's e-mail address > --url < URL to monitor >** --stage <dev|prod>
 
 Note: 
  - Make sure you set your AWS Credentials.
- - You will need to verify the to and from e-mail addresses for AWS SES.
+ - You will need to verify the TO and FROM e-mail addresses for AWS SES.
  - You will need to check your e-mails and confirm an AWS invitation.
 
-See more at: https://serverless.com/framework/docs/providers/aws/guide/quick-start/
+See more at: 
+ - https://serverless.com/framework/docs/providers/aws/guide/quick-start/
+ - https://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html
 

@@ -3,6 +3,8 @@ service: serverless-monitoring
 provider:
   name: aws
   runtime: nodejs8.10
+  memorySize: 512 # optional, in MB, default is 1024
+  timeout: 3 # optional, in seconds, default is 6
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
@@ -13,27 +15,39 @@ provider:
         - ${self:custom.monitoring.topicArn}
         - ${self:custom.monitoring.toEmailIdentity}
         - ${self:custom.monitoring.fromEmailIdentity}
-  # AWS SES only works in certain regions
+  # AWS SES only works in certain regions. Check documentation.
   region: eu-west-1
   environment:
     url: ${opt:url}
     snsTopic: ${self:custom.monitoring.topicName}
     fromEmail: ${opt:fromEmail}
     toEmail: ${opt:toEmail}
+    region: ${self:region}
+
+package:
+  individually: true
+
 
 functions:
   email-notify-function:
-    handler: emailNotify.handler
+    handler: notifiers/email.handler
+    package:
+      include:
+          - notifiers/**
+      exclude:
+          - node_modules/**
+          - ping.js
     events: 
-      - sns:
-          topicName: ${self:custom.monitoring.topicName}
-          displayName: ${self:custom.monitoring.topicName}
+      - sns: ${self:custom.monitoring.topicName}
   pinger-function:
     handler: ping.handler
+    package: 
+      exclude: 
+        - notifiers/**
     events:
       - schedule:
           rate: rate(1 minute)
-          enabled: true
+          enabled: false
 
 plugins:
   - serverless-plugin-aws-alerts
