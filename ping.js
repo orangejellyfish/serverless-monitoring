@@ -2,11 +2,9 @@ const request = require('request-promise-native');
 const AWS = require('aws-sdk');
 const sns = new AWS.SNS();
 
-const { url } = process.env;
+const { url, accountId, region, snsTopic } = process.env;
 
-const snsContext =
-  (({ accountId, region, snsTopic }) =>
-    ({ accountId, region, snsTopic }))(process.env);
+const serviceContext = { accountId, region, snsTopic };
 
 const publisher = (context) => (message, success) =>
   sns.publish({
@@ -26,7 +24,7 @@ const publisher = (context) => (message, success) =>
   });
 
 module.exports.handler = async (event) => {
-    const publishMessage = publisher(snsContext);
+    const publishMessage = publisher(serviceContext);
     return request(url)
         .then(
           () => {
