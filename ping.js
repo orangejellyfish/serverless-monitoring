@@ -4,7 +4,7 @@ const sns = new AWS.SNS();
 
 const { url } = process.env;
 
-let snsContext =
+const snsContext =
   (({ accountId, region, snsTopic }) =>
     ({ accountId, region, snsTopic }))(process.env);
 
