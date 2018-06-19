@@ -1,13 +1,9 @@
 const AWS = require('aws-sdk');
-const ses = new AWS.SES({
-  region: process.env.region
-});
+const ses = new AWS.SES();
 
-const URL = process.env.url;
-const from = process.env.fromEmail;
-const to = process.env.toEmail;
+const { url, toEmail, fromEmail } = process.env
 
-let getMailOptions = (from, to, message) => ({
+const getMailOptions = (from, to, message) => ({
   Destination: {
       ToAddresses: [to]
   },
@@ -18,22 +14,21 @@ let getMailOptions = (from, to, message) => ({
           }
       },
       Subject: {
-          Data: `${URL} in trouble!`
+          Data: `${url} in trouble!`
       }
   },
   Source: from
 });
 
-module.exports.handler = async (event, context) => {
-  let messages = event['Records']
-    .map(record => record.Sns)
-    .filter(sns => sns.MessageAttributes.success.Value !== 'true')
-    .map(sns => sns.Message);
+module.exports.handler = async (event) => {
+  const messages = event['Records']
+    .filter(({ Sns }) => Sns.MessageAttributes.success.Value !== 'true')
+    .map(({ Sns }) => Sns.Message);
 
-  let emailPromises = messages
+  const emailPromises = messages
     .map(message =>
       ses
-        .sendEmail(getMailOptions(to, from, message))
+        .sendEmail(getMailOptions(toEmail, fromEmail, message))
         .promise()
         .then(
           () => console.log("Email sent successfully."),

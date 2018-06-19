@@ -2,15 +2,13 @@ const request = require('request-promise-native');
 const AWS = require('aws-sdk');
 const sns = new AWS.SNS();
 
-const URL = process.env.url;
-const SNSTopicName = process.env.snsTopic;
+const { url } = process.env;
 
-let getSNSContext = lambdaContext => ({
-  region: lambdaContext.invokedFunctionArn.split(':')[3],
-  accountId: lambdaContext.invokedFunctionArn.split(':')[4]
-});
+let snsContext =
+  (({ accountId, region, snsTopic }) =>
+    ({ accountId, region, snsTopic }))(process.env);
 
-let publisher = (snsContext) => (message, success) =>
+const publisher = (context) => (message, success) =>
   sns.publish({
       Message: message,
       MessageAttributes: {
@@ -19,7 +17,7 @@ let publisher = (snsContext) => (message, success) =>
           StringValue: JSON.stringify(success)
         }
       },
-      TopicArn: `arn:aws:sns:${snsContext.region}:${snsContext.accountId}:${SNSTopicName}`
+      TopicArn: `arn:aws:sns:${context.region}:${context.accountId}:${context.snsTopic}`
   }, (err) => {
       if (err) {
           console.error('Error in publishing to SNS topic', err.stack);
@@ -27,16 +25,16 @@ let publisher = (snsContext) => (message, success) =>
       }
   });
 
-module.exports.handler = async (event, context) => {
-    let publishMessage = publisher(getSNSContext(context));
-    return request(URL)
+module.exports.handler = async (event) => {
+    const publishMessage = publisher(snsContext);
+    return request(url)
         .then(
           () => {
-            publishMessage(`${URL} IS available!`, true)
+            publishMessage(`${url} IS available!`, true)
             return true;
           },
           () => {
-            publishMessage(`${URL} NOT available!`, false)
+            publishMessage(`${url} NOT available!`, false)
             return false;
           }
         );

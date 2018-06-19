@@ -19,10 +19,11 @@ provider:
   region: eu-west-1
   environment:
     url: ${opt:url}
-    snsTopic: ${self:custom.monitoring.topicName}
     fromEmail: ${opt:fromEmail}
     toEmail: ${opt:toEmail}
-    region: ${self:region}
+    accountId: { Ref: AWS::AccountId }
+    region: ${self:provider.region}
+    snsTopic: ${self:custom.monitoring.topicName}
 
 package:
   individually: true
@@ -37,12 +38,12 @@ functions:
       exclude:
           - node_modules/**
           - ping.js
-    events: 
+    events:
       - sns: ${self:custom.monitoring.topicName}
   pinger-function:
     handler: ping.handler
-    package: 
-      exclude: 
+    package:
+      exclude:
         - notifiers/**
     events:
       - schedule:
@@ -54,7 +55,7 @@ plugins:
 
 custom:
   monitoring:
-    arn: 
+    arn:
       Fn::Join:
         - ":"
         - - arn
@@ -63,12 +64,12 @@ custom:
           - Ref: AWS::Region
           - Ref: AWS::AccountId
     topicName: monitoringTopic
-    topicArn: 
+    topicArn:
       Fn::Join:
         - ":"
         - - ${self:custom.monitoring.arn}
           - ${self:custom.monitoring.topicName}
-    identity: 
+    identity:
       Fn::Join:
         - ":"
         - - arn
@@ -77,12 +78,12 @@ custom:
           - Ref: AWS::Region
           - Ref: AWS::AccountId
           - identity
-    fromEmailIdentity: 
+    fromEmailIdentity:
       Fn::Join:
         - "/"
         - - ${self:custom.monitoring.identity}
           - ${opt:fromEmail}
-    toEmailIdentity: 
+    toEmailIdentity:
       Fn::Join:
         - "/"
         - - ${self:custom.monitoring.identity}
@@ -93,8 +94,8 @@ custom:
       - staging
       - dev
     topics:
-      alarm: 
-        topic: ${self:service}-dev-alerts-alarm
+      alarm:
+        topic: ${self:service}-alerts-alarm
         notifications:
           - protocol: email
             endpoint: ${opt:toEmail}
