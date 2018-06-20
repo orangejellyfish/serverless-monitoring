@@ -48,7 +48,7 @@ functions:
     events:
       - schedule:
           rate: rate(1 minute)
-          enabled: false
+          enabled: true
 
 plugins:
   - serverless-plugin-aws-alerts
@@ -63,7 +63,7 @@ custom:
           - sns
           - Ref: AWS::Region
           - Ref: AWS::AccountId
-    topicName: monitoringTopic
+    topicName: monitoringTopic-${opt:stage}
     topicArn:
       Fn::Join:
         - ":"
@@ -95,7 +95,7 @@ custom:
       - dev
     topics:
       alarm:
-        topic: ${self:service}-alerts-alarm
+        topic: ${self:service}-${opt:stage}-alerts-alarm
         notifications:
           - protocol: email
             endpoint: ${opt:toEmail}
