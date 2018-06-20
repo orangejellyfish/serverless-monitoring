@@ -1,0 +1,20 @@
+{
+  "name": "serverless-monitoring",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5",
+    "serverless-plugin-aws-alerts": "^1.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orangejellyfish/serverless-monitoring.git"
+  },
+  "author": "Orangejellyfish.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/orangejellyfish/serverless-monitoring/issues"
+  },
+  "homepage": "https://github.com/orangejellyfish/serverless-monitoring#readme"
+}

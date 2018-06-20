@@ -1,0 +1,105 @@
+service: serverless-monitoring
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  memorySize: 512 # optional, in MB, default is 1024
+  timeout: 3 # optional, in seconds, default is 6
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - "sns:Publish"
+        - "ses:SendEmail"
+        - "ses:SendRawEmail"
+      Resource:
+        - ${self:custom.monitoring.topicArn}
+        - ${self:custom.monitoring.toEmailIdentity}
+        - ${self:custom.monitoring.fromEmailIdentity}
+  # AWS SES only works in certain regions. Check documentation.
+  region: eu-west-1
+  environment:
+    url: ${opt:url}
+    fromEmail: ${opt:fromEmail}
+    toEmail: ${opt:toEmail}
+    accountId: { Ref: AWS::AccountId }
+    region: ${self:provider.region}
+    snsTopic: ${self:custom.monitoring.topicName}
+
+package:
+  individually: true
+
+
+functions:
+  email-notify-function:
+    handler: notifiers/email.handler
+    package:
+      include:
+          - notifiers/**
+      exclude:
+          - node_modules/**
+          - ping.js
+    events:
+      - sns: ${self:custom.monitoring.topicName}
+  pinger-function:
+    handler: ping.handler
+    package:
+      exclude:
+        - notifiers/**
+    events:
+      - schedule:
+          rate: rate(1 minute)
+          enabled: false
+
+plugins:
+  - serverless-plugin-aws-alerts
+
+custom:
+  monitoring:
+    arn:
+      Fn::Join:
+        - ":"
+        - - arn
+          - aws
+          - sns
+          - Ref: AWS::Region
+          - Ref: AWS::AccountId
+    topicName: monitoringTopic
+    topicArn:
+      Fn::Join:
+        - ":"
+        - - ${self:custom.monitoring.arn}
+          - ${self:custom.monitoring.topicName}
+    identity:
+      Fn::Join:
+        - ":"
+        - - arn
+          - aws
+          - ses
+          - Ref: AWS::Region
+          - Ref: AWS::AccountId
+          - identity
+    fromEmailIdentity:
+      Fn::Join:
+        - "/"
+        - - ${self:custom.monitoring.identity}
+          - ${opt:fromEmail}
+    toEmailIdentity:
+      Fn::Join:
+        - "/"
+        - - ${self:custom.monitoring.identity}
+          - ${opt:toEmail}
+  alerts:
+    stages:
+      - production
+      - staging
+      - dev
+    topics:
+      alarm:
+        topic: ${self:service}-alerts-alarm
+        notifications:
+          - protocol: email
+            endpoint: ${opt:toEmail}
+    alarms:
+      - functionErrors
+      - functionThrottles
+
