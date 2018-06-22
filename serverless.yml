@@ -24,6 +24,7 @@ provider:
     accountId: { Ref: AWS::AccountId }
     region: ${self:provider.region}
     snsTopic: ${self:custom.monitoring.topicName}
+    slackHookUrl: ${opt:slackHookUrl}
 
 package:
   individually: true
@@ -40,6 +41,15 @@ functions:
           - ping.js
     events:
       - sns: ${self:custom.monitoring.topicName}
+  slack-notify-function:
+    handler: notifiers/slack.handler
+    package:
+      include:
+          - notifiers/**
+      exclude:
+          - ping.js
+    events:
+      - sns: ${self:custom.monitoring.topicName}
   pinger-function:
     handler: ping.handler
     package:
@@ -48,7 +58,7 @@ functions:
     events:
       - schedule:
           rate: rate(1 minute)
-          enabled: false
+          enabled: true
 
 plugins:
   - serverless-plugin-aws-alerts
@@ -63,7 +73,7 @@ custom:
           - sns
           - Ref: AWS::Region
           - Ref: AWS::AccountId
-    topicName: monitoringTopic
+    topicName: monitoringTopic-${opt:stage}
     topicArn:
       Fn::Join:
         - ":"
@@ -95,7 +105,7 @@ custom:
       - dev
     topics:
       alarm:
-        topic: ${self:service}-alerts-alarm
+        topic: ${self:service}-${opt:stage}-alerts-alarm
         notifications:
           - protocol: email
             endpoint: ${opt:toEmail}

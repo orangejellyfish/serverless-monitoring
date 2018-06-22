@@ -12,13 +12,13 @@ After deploying, this service starts monitoring the provided URL and sends an e-
 
 ## Deployment
 ```
-serverless deploy --fromEmail <sender's e-mail address> --toEmail <recipient's e-mail address> --url <URL to monitor> --stage <dev|prod>
+serverless deploy --fromEmail <sender's e-mail address> --toEmail <recipient's e-mail address> --url <URL to monitor> --stage <dev|production>
 ```
 
 ## Clean slate
 
 ```
-serverless remove --fromEmail < sender's e-mail address > --toEmail < recipient's e-mail address > --url < URL to monitor > --stage <dev|prod>
+serverless remove --fromEmail < sender's e-mail address > --toEmail < recipient's e-mail address > --url < URL to monitor > --stage <dev|production>
  ```
 
 Note:
