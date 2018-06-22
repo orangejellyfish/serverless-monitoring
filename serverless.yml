@@ -24,6 +24,7 @@ provider:
     accountId: { Ref: AWS::AccountId }
     region: ${self:provider.region}
     snsTopic: ${self:custom.monitoring.topicName}
+    slackHookUrl: ${opt:slackHookUrl}
 
 package:
   individually: true
@@ -37,6 +38,15 @@ functions:
           - notifiers/**
       exclude:
           - node_modules/**
+          - ping.js
+    events:
+      - sns: ${self:custom.monitoring.topicName}
+  slack-notify-function:
+    handler: notifiers/slack.handler
+    package:
+      include:
+          - notifiers/**
+      exclude:
           - ping.js
     events:
       - sns: ${self:custom.monitoring.topicName}

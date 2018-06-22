@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const ses = new AWS.SES();
 
-const { url, toEmail, fromEmail } = process.env
+const { toEmail, fromEmail } = process.env
 
 const getMailOptions = (from, to, message) => ({
   Destination: {
@@ -14,7 +14,7 @@ const getMailOptions = (from, to, message) => ({
           }
       },
       Subject: {
-          Data: `${url} in trouble!`
+          Data: message
       }
   },
   Source: from
